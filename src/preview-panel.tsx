@@ -1,4 +1,5 @@
 // purpose: live preview iframe and syntax-highlighted code display for generated components
+/* eslint-disable react-refresh/only-export-components */
 
 import { useState, useCallback, useMemo } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
@@ -11,10 +12,10 @@ export const buildSrcdoc = (jsxCode: string): string => `
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"><\/script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"><\/script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
-  <script src="https://cdn.tailwindcss.com"><\/script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { margin: 0; padding: 16px; font-family: system-ui, -apple-system, sans-serif; background: white; }
     .error-display { color: #ef4444; padding: 16px; font-family: monospace; font-size: 14px; white-space: pre-wrap; }
@@ -31,12 +32,12 @@ export const buildSrcdoc = (jsxCode: string): string => `
     } catch (err) {
       document.getElementById('root').innerHTML = '<div class="error-display">Render error: ' + err.message + '</div>';
     }
-  <\/script>
+  </script>
   <script>
     window.onerror = function(msg) {
       document.getElementById('root').innerHTML = '<div class="error-display">Error: ' + msg + '</div>';
     };
-  <\/script>
+  </script>
 </body>
 </html>`;
 
