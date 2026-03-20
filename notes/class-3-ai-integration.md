@@ -34,6 +34,122 @@ You send an array of messages, each with a `role`:
 
 The AI responds with a new `assistant` message based on the full conversation context.
 
+## Step 1.5: Try the API in Postman First
+
+Before writing any code, let's call the OpenAI API directly from Postman. This helps you understand exactly what the API expects and what it returns - without React, TypeScript, or any SDK getting in the way.
+
+### Why Postman First?
+
+When something breaks in your app, you need to know: is it the API or my code? If you've already seen the API work in Postman, you know the API side is fine and the bug is in your React code. This is a debugging superpower.
+
+### Setting Up the Request
+
+1. Open Postman (download from [postman.com](https://www.postman.com/downloads/) if you don't have it)
+2. Create a new **POST** request
+3. Set the URL to:
+
+```
+https://api.openai.com/v1/chat/completions
+```
+
+### Headers
+
+Add these two headers:
+
+| Key | Value |
+|-----|-------|
+| `Content-Type` | `application/json` |
+| `Authorization` | `Bearer sk-your-api-key-here` |
+
+Note the `Bearer ` prefix (with a space) before your API key. This is standard for API authentication.
+
+### Request Body
+
+Click the **Body** tab, select **raw** and **JSON**, then paste:
+
+```json
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Return only raw JSX for a single React component. No imports, no exports, no function wrapper, no explanations, no markdown code fences. Use only Tailwind CSS classes for styling. The JSX should be a single root element. Use realistic placeholder content."
+    },
+    {
+      "role": "user",
+      "content": "A dark pricing card with monthly and annual toggle"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 2000
+}
+```
+
+### Send It
+
+Click **Send**. You'll get a response like this:
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1711234567,
+  "model": "gpt-4o-2024-08-06",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "<div className=\"bg-gray-900 rounded-2xl p-8 max-w-sm mx-auto\">\n  <h2 className=\"text-2xl font-bold text-white\">Pro Plan</h2>\n  ..."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 85,
+    "completion_tokens": 342,
+    "total_tokens": 427
+  }
+}
+```
+
+### What to Notice
+
+**The response structure:**
+- `choices` is an array (usually with 1 item)
+- `choices[0].message.content` contains the AI's text response - this is the JSX we need
+- `usage` tells you how many tokens were used (affects billing)
+
+**The content field** is where our generated JSX lives. In code, we'll access it as:
+```typescript
+response.choices[0].message.content
+```
+
+**Experiment with it:**
+- Change the `user` message to different component descriptions
+- Try changing `temperature` to `0` (very predictable) vs `1` (very creative)
+- Try lowering `max_tokens` to `500` and see how it cuts off longer responses
+- Remove the `system` message and see how the output changes (it'll include markdown fences, imports, etc.)
+
+### Understanding the API Flow
+
+```
+Your App                         OpenAI API
+   |                                |
+   |--- POST /chat/completions ---->|
+   |    (model, messages, config)   |
+   |                                |
+   |<--- JSON response -------------|
+   |    (choices[0].message.content) |
+   |                                |
+   v                                v
+Parse the content, clean it, render it
+```
+
+This is exactly what our React code will do - just with the `openai` npm package handling the HTTP request for us instead of Postman.
+
+---
+
 ## Step 2: Write the Code Cleaning Function
 
 AI models often return code wrapped in markdown fences, with import statements, or inside function declarations. We need to strip all that out to get pure JSX.
